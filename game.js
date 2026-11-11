@@ -3,7 +3,7 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.m
 (() => {
   'use strict';
   const $ = id => document.getElementById(id);
-  const ui = {pfill:$('playerFill'),efill:$('enemyFill'),pnum:$('playerNum'),enum:$('enemyNum'),round:$('roundLabel'),name:$('enemyName'),veil:$('veil'),title:$('cardTitle'),eyebrow:$('cardEyebrow'),text:$('cardText'),start:$('startBtn'),guard:$('guardBtn'),dodge:$('dodgeBtn'),attack:$('attackBtn'),toast:$('toast'),meter:$('meterFill')};
+  const ui = {pfill:$('playerFill'),efill:$('enemyFill'),pnum:$('playerNum'),enum:$('enemyNum'),round:$('roundLabel'),name:$('enemyName'),veil:$('veil'),title:$('cardTitle'),eyebrow:$('cardEyebrow'),text:$('cardText'),start:$('startBtn'),guard:$('guardBtn'),dodge:$('dodgeBtn'),attack:$('attackBtn'),toast:$('toast'),meter:$('meterFill'),cue:$('combatCue')};
   const canvas = $('scene');
   const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
   const scene = new THREE.Scene();
@@ -18,9 +18,21 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.m
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   const clock = new THREE.Clock();
-  let mode='menu', round=1, combo=0, riposte=0, guarding=false, guardStarted=0, swipe=null, enemyTimer=1.6, flash=0, transition=false;
+  let mode='menu', round=1, combo=0, riposte=0, guarding=false, guardStarted=0, swipe=null, enemyTimer=1.6, flash=0, transition=false, opening=0, moveIndex=0, enemyPattern=[];
   const player={hp:100,max:100,attack:0,dodge:0,hit:0,attackDir:{x:1,y:0},attackName:'slash'};
-  const enemy={hp:100,max:100,attack:0,wind:0,hit:0,stun:0};
+  const enemy={hp:100,max:100,attack:0,wind:0,hit:0,stun:0,move:null};
+  const enemyMoves={
+    sweep:{name:'Рубящий выпад',defense:'block',dir:{x:1,y:0},cue:'БЛОК ЩИТОМ · ГОРИЗОНТАЛЬНЫЙ УДАР'},
+    hook:{name:'Косой удар',defense:'block',dir:{x:-1,y:0},cue:'БЛОК ЩИТОМ · КОСОЙ УДАР'},
+    overhead:{name:'Удар сверху',defense:'dodge',dir:{x:0,y:1},cue:'УКЛОНЯЙСЯ · УДАР СВЕРХУ'},
+    thrust:{name:'Укол',defense:'parry',dir:{x:1,y:0},cue:'ПАРИРУЙ УДАРОМ ↔ · УДАР ВСТРЕЧНЫЙ'},
+    reverse:{name:'Обратный укол',defense:'parry',dir:{x:0,y:1},cue:'ПАРИРУЙ УДАРОМ ↕ · НАВСТРЕЧУ ИЛИ В ТУ ЖЕ СТОРОНУ'}
+  };
+  const patterns=[
+    [['sweep','overhead','thrust'],['hook','thrust'],['overhead','sweep','thrust']],
+    [['overhead','hook','thrust'],['thrust','sweep','reverse'],['hook','overhead','thrust']],
+    [['sweep','reverse','overhead','thrust'],['thrust','hook','overhead'],['overhead','sweep','reverse','thrust']]
+  ];
   const effects=[];
   const V=(x,y,z)=>new THREE.Vector3(x,y,z);
   const mat=(color,roughness=.8,metalness=.1,emissive=0)=>new THREE.MeshStandardMaterial({color,roughness,metalness,emissive,emissiveIntensity:emissive?1.2:0});
@@ -88,26 +100,36 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.m
   function resize(){const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w/h<.72?61:54;camera.updateProjectionMatrix();}
   new ResizeObserver(resize).observe(canvas);resize();
   function toast(msg){ui.toast.textContent=msg;ui.toast.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>ui.toast.classList.remove('show'),1050);}
-  function updateHUD(){ui.pfill.style.width=`${clamp(player.hp,0,100)}%`;ui.efill.style.width=`${clamp(enemy.hp/enemy.max*100,0,100)}%`;ui.pnum.textContent=Math.ceil(player.hp);ui.enum.textContent=Math.ceil(enemy.hp);ui.round.textContent=`Испытание ${['I','II','III'][round-1]||'III'} / 3`;ui.meter.style.width=`${riposte}%`;ui.guard.classList.toggle('primary',guarding);ui.attack.disabled=mode!=='play';ui.dodge.disabled=mode!=='play';}
-  function showCard(type){mode=type;ui.veil.classList.remove('hidden');if(type==='menu'){ui.eyebrow.textContent='Сталь помнит';ui.title.textContent='Ashen Oath';ui.text.textContent='Встань лицом к лицу с рыцарем в руинах крепости. Свайпай в нужную сторону, чтобы задать направление удара; удерживай щит и поймай момент для парирования.';ui.start.textContent='Войти на арену';}else if(type==='victory'){ui.eyebrow.textContent='Клятва нерушима';ui.title.textContent='Победа';ui.text.textContent='Тишина снова воцарилась в Разрушенной крепости. Твоя сталь заслужила имя.';ui.start.textContent='Сразиться снова';}else{ui.eyebrow.textContent='Испытание окончено';ui.title.textContent='Поражение';ui.text.textContent='Полый рыцарь завладел ареной. Соберись и вернись в бой.';ui.start.textContent='Подняться снова';}}
-  function newEnemy(){transition=false;enemy.max=100+(round-1)*14;enemy.hp=enemy.max;enemy.wind=0;enemy.attack=0;enemy.hit=0;enemy.stun=0;enemyTimer=1.5;ui.name.textContent=['Полый рыцарь','Алый жнец','Пепельный король'][round-1]||'Пепельный король';foe.root.visible=true;updateHUD();}
-  function begin(){round=1;player.hp=100;player.attack=0;player.dodge=0;player.hit=0;combo=0;riposte=0;guarding=false;ui.guard.classList.remove('primary');newEnemy();ui.veil.classList.add('hidden');mode='play';}
+  function updateHUD(){ui.pfill.style.width=`${clamp(player.hp,0,100)}%`;ui.efill.style.width=`${clamp(enemy.hp/enemy.max*100,0,100)}%`;ui.pnum.textContent=Math.ceil(player.hp);ui.enum.textContent=Math.ceil(enemy.hp);ui.round.textContent=`Испытание ${['I','II','III'][round-1]||'III'} / 3`;ui.meter.style.width=`${opening>0?opening/3*100:riposte}%`;ui.guard.classList.toggle('primary',guarding);ui.attack.disabled=mode!=='play';ui.dodge.disabled=mode!=='play';}
+  function showCard(type){mode=type;ui.veil.classList.remove('hidden');if(type==='menu'){ui.eyebrow.textContent='Сталь помнит';ui.title.textContent='Ashen Oath';ui.text.textContent='Выдержи серию рыцаря: блокируй рубящие удары, уклоняйся от атак сверху и парируй укол встречным ударом в том же или обратном направлении. Когда враг выдохнется, у тебя будет несколько секунд для атаки.';ui.start.textContent='Войти на арену';}else if(type==='victory'){ui.eyebrow.textContent='Клятва нерушима';ui.title.textContent='Победа';ui.text.textContent='Тишина снова воцарилась в Разрушенной крепости. Твоя сталь заслужила имя.';ui.start.textContent='Сразиться снова';}else{ui.eyebrow.textContent='Испытание окончено';ui.title.textContent='Поражение';ui.text.textContent='Полый рыцарь завладел ареной. Соберись и вернись в бой.';ui.start.textContent='Подняться снова';}}
+  function newEnemy(){transition=false;enemy.max=100+(round-1)*14;enemy.hp=enemy.max;enemy.wind=0;enemy.attack=0;enemy.hit=0;enemy.stun=0;enemy.move=null;enemyTimer=1.5;opening=0;moveIndex=0;enemyPattern=[];ui.cue.textContent='ЧИТАЙ ТЕЛЕГРАФ АТАКИ';ui.cue.classList.remove('open');ui.name.textContent=['Полый рыцарь','Алый жнец','Пепельный король'][round-1]||'Пепельный король';foe.root.visible=true;updateHUD();}
+  function begin(){round=1;player.hp=100;player.attack=0;player.dodge=0;player.hit=0;combo=0;riposte=0;opening=0;guarding=false;ui.guard.classList.remove('primary');newEnemy();ui.veil.classList.add('hidden');mode='play';}
   function burst(position,color=0xe6c47b,count=13){for(let i=0;i<count;i++){const mesh=new THREE.Mesh(new THREE.IcosahedronGeometry(.035+Math.random()*.045,0),new THREE.MeshBasicMaterial({color,transparent:true}));mesh.position.copy(position);scene.add(mesh);effects.push({mesh,life:.35+Math.random()*.35,velocity:V((Math.random()-.5)*3,Math.random()*2,(Math.random()-.5)*2)});}}
   function slashArc(dir){const group=new THREE.Group();group.position.set(dir.x*.38,1.5+dir.y*.24,1.15);hero.root.add(group);const arc=new THREE.Mesh(new THREE.TorusGeometry(.78,.026,5,32,Math.PI*1.12),new THREE.MeshBasicMaterial({color:0xffd889,transparent:true,opacity:.88}));arc.rotation.set(dir.y*.45,0,Math.atan2(dir.y,dir.x)-.5);group.add(arc);effects.push({mesh:group,life:.32,velocity:V(0,0,0),arc:true});}
+  function damageEnemy(dir,bonus=0){combo++;const base=Math.abs(dir.y)>.68?18:14;const damage=base+Math.min(combo,5)*1.4+bonus;enemy.hp=Math.max(0,enemy.hp-damage);enemy.hit=.3;foe.impact.material.opacity=.85;slashArc(dir);burst(V(dir.x*.35,1.35+dir.y*.22,4.1),0xe8c879,14);updateHUD();if(enemy.hp<=0){transition=true;opening=0;setTimeout(()=>{if(mode!=='play')return;if(round<3){round++;player.hp=Math.min(100,player.hp+22);newEnemy();toast('Новый противник');}else showCard('victory');},700);}}
   function doAttack(dir={x:1,y:0}){
     if(mode!=='play'||transition||enemy.hp<=0||player.attack>0||player.dodge>0)return;
-    const len=Math.hypot(dir.x,dir.y)||1;dir={x:dir.x/len,y:dir.y/len};player.attack=.48;player.attackDir=dir;player.attackName=Math.abs(dir.y)>.68?(dir.y>0?'overhead':'rising'):(dir.x<0?'left cut':'right cut');combo++;
-    let damage=Math.abs(dir.y)>.68?18:14;damage+=Math.min(combo,5)*1.4;
-    if(enemy.wind>0){damage+=9;enemy.wind=0;enemy.stun=.95;riposte=clamp(riposte+30,0,100);toast('Срыв атаки!');burst(V(0,1.3,4.15),0xf0cd7a,21);}else if(enemy.stun>0){damage+=7;riposte=clamp(riposte+12,0,100);}
-    enemy.hp=Math.max(0,enemy.hp-damage);enemy.hit=.3;foe.impact.material.opacity=.85;slashArc(dir);burst(V(dir.x*.35,1.35+dir.y*.22,4.1),0xe8c879,14);updateHUD();
-    if(enemy.hp<=0){transition=true;setTimeout(()=>{if(mode!=='play')return;if(round<3){round++;player.hp=Math.min(100,player.hp+22);newEnemy();toast('Новый противник');}else showCard('victory');},700);}
+    const len=Math.hypot(dir.x,dir.y)||1;dir={x:dir.x/len,y:dir.y/len};
+    if(opening<=0){
+      if(enemy.wind>0&&enemy.move?.defense==='parry'){
+        if(enemy.wind>.28){toast('Жди столкновения клинков');return;}
+        const sameAxis=Math.abs(dir.x*enemy.move.dir.x+dir.y*enemy.move.dir.y)>=.72;
+        if(!sameAxis){toast('Нужен удар в том же или обратном направлении');return;}
+        player.attack=.48;player.attackDir=dir;enemy.wind=0;enemy.stun=1.05;enemy.hit=.3;enemy.attack=.42;riposte=clamp(riposte+25,0,100);toast('Парирование клинком!');burst(V(0,1.4,2.4),0xf4d18a,24);damageEnemy(dir,10);completeEnemyMove();return;
+      }
+      toast('Атакуй после серии ударов');return;
+    }
+    player.attack=.48;player.attackDir=dir;player.attackName=Math.abs(dir.y)>.68?(dir.y>0?'overhead':'rising'):(dir.x<0?'left cut':'right cut');damageEnemy(dir,enemy.stun>0?7:0);
   }
   function doDodge(){if(mode!=='play'||player.dodge>0)return;player.dodge=.62;player.attack=0;guarding=false;ui.guard.classList.remove('primary');toast('Уклонение');}
   function setGuard(on){if(mode!=='play')return;if(on&&!guarding)guardStarted=performance.now();guarding=on;ui.guard.classList.toggle('primary',on);}
-  function enemyStrike(){if(mode!=='play')return;if(player.dodge>0){toast('Чистое уклонение');riposte=clamp(riposte+20,0,100);burst(V(0,1.1,.3),0xc7d6d1,9);}else if(guarding){const perfect=performance.now()-guardStarted<430;if(perfect){toast('Идеальное парирование');riposte=clamp(riposte+40,0,100);enemy.stun=1.1;burst(V(0,1.35,1.2),0xf4d18a,24);}else{toast('Блок щитом');player.hp=Math.max(0,player.hp-5);riposte=clamp(riposte+8,0,100);burst(V(0,1.35,.45),0xaa9b78,10);}}else{player.hp=Math.max(0,player.hp-15-round*2);player.hit=.42;combo=0;burst(V(0,1.3,.35),0xa64c3c,16);toast('Получен удар');}enemy.attack=.42;updateHUD();if(player.hp<=0)setTimeout(()=>{if(mode==='play')showCard('defeat');},450);}
+  function completeEnemyMove(){enemy.move=null;moveIndex++;enemyTimer=.62;if(moveIndex>=enemyPattern.length){opening=3;enemyTimer=3;ui.cue.textContent='ОКНО ДЛЯ АТАКИ · 3 СЕКУНДЫ';ui.cue.classList.add('open');toast('Теперь атакуй!');}else{ui.cue.textContent=`СЕРИЯ ПРОДОЛЖАЕТСЯ · ${enemyPattern.length-moveIndex} УДАРА`;ui.cue.classList.remove('open');}}
+  function startEnemyMove(){if(!enemyPattern.length||moveIndex>=enemyPattern.length){const pool=patterns[round-1]||patterns[2];enemyPattern=pool[Math.floor(Math.random()*pool.length)].map(key=>enemyMoves[key]);moveIndex=0;}enemy.move=enemyPattern[moveIndex];enemy.wind=.88;ui.cue.textContent=enemy.move.cue;ui.cue.classList.remove('open');}
+  function enemyStrike(){if(mode!=='play'||!enemy.move)return;const move=enemy.move;if(move.defense==='block'&&guarding){const precise=performance.now()-guardStarted<430;toast(precise?'Точный блок':'Блок щитом');player.hp=Math.max(0,player.hp-(precise?2:5));riposte=clamp(riposte+(precise?18:8),0,100);burst(V(0,1.35,.45),precise?0xf4d18a:0xaa9b78,precise?18:10);}else if(move.defense==='dodge'&&player.dodge>0){toast('Чистое уклонение');riposte=clamp(riposte+20,0,100);burst(V(0,1.1,.3),0xc7d6d1,12);}else{const guarded=guarding;player.hp=Math.max(0,player.hp-(guarded?10:15+round*2));player.hit=.42;combo=0;burst(V(0,1.3,.35),0xa64c3c,16);toast(guarded?'Щит не удержал удар':'Получен удар');}enemy.attack=.42;completeEnemyMove();updateHUD();if(player.hp<=0)setTimeout(()=>{if(mode==='play')showCard('defeat');},450);}
   function update(dt,t){
     player.attack=Math.max(0,player.attack-dt);player.dodge=Math.max(0,player.dodge-dt);player.hit=Math.max(0,player.hit-dt);enemy.hit=Math.max(0,enemy.hit-dt);enemy.attack=Math.max(0,enemy.attack-dt);enemy.stun=Math.max(0,enemy.stun-dt);const wasWinding=enemy.wind>0;enemy.wind=Math.max(0,enemy.wind-dt);flash=Math.max(0,flash-dt);
-    if(mode==='play'&&enemy.hp>0&&enemy.stun<=0&&enemy.wind<=0&&enemy.attack<=0){enemyTimer-=dt;if(enemyTimer<=0){enemy.wind=.88;enemyTimer=2.15+Math.random()*1.1;}}
+    if(mode==='play'&&opening>0){opening=Math.max(0,opening-dt);if(opening===0){enemyPattern=[];moveIndex=0;enemyTimer=.42;ui.cue.textContent='ПРОТИВНИК ГОТОВИТ НОВУЮ СЕРИЮ';ui.cue.classList.remove('open');}}
+    if(mode==='play'&&enemy.hp>0&&opening<=0&&enemy.stun<=0&&enemy.wind<=0&&enemy.attack<=0&&!enemy.move){enemyTimer-=dt;if(enemyTimer<=0)startEnemyMove();}
     if(wasWinding&&enemy.wind===0)enemyStrike();
     if(foe.impact.material.opacity>0)foe.impact.material.opacity=Math.max(0,foe.impact.material.opacity-dt*3.4);
     const idle=Math.sin(t*2.1);
@@ -121,13 +143,13 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.m
     if(player.attack>0){const progress=1-player.attack/.48,d=player.attackDir;hero.swordArm.rotation.z=Math.abs(d.x)>.68?THREE.MathUtils.lerp(d.x>0?-.95:.95,d.x>0?.95:-.95,progress):THREE.MathUtils.lerp(d.x<0?.65:-.65,d.x<0?-.85:.85,progress);hero.swordArm.rotation.x=Math.abs(d.y)>.68?THREE.MathUtils.lerp(d.y>0?-.9:.9,d.y>0?.9:-.9,progress):-.12;hero.swordArm.rotation.y=-.15+Math.sin(progress*Math.PI)*.34;}
     else{hero.swordArm.rotation.set(-.12+Math.sin(t*2.1)*.018,0,-.12);}
     foe.body.position.y=enemy.wind>0?.025:Math.sin(t*2.2+1)*.022;
-    foe.swordArm.rotation.z=enemy.wind>0?-.95:enemy.attack>0?.8:enemy.stun>0?.5:Math.sin(t*2)*.02;
-    foe.swordArm.rotation.x=enemy.wind>0?-.4:enemy.attack>0?.75:0;
-    foe.shieldArm.rotation.x=enemy.wind>0?.18:0;
+    const move=enemy.move;foe.swordArm.rotation.z=enemy.wind>0?(move?.defense==='dodge'?-1.15:move?.dir.y?-.72:-.95):enemy.attack>0?.8:enemy.stun>0?.5:Math.sin(t*2)*.02;
+    foe.swordArm.rotation.x=enemy.wind>0?(move?.dir.y?-.85:-.4):enemy.attack>0?.75:0;
+    foe.shieldArm.rotation.x=enemy.wind>0?(move?.defense==='block'?.5:.18):0;
     foe.root.position.z=4.7+(enemy.attack>0?-.35:enemy.stun>0?.12:0);
     foe.body.rotation.z=enemy.hit>0?Math.sin(t*50)*.12:0;
     for(let i=effects.length-1;i>=0;i--){const e=effects[i];e.life-=dt;if(!e.arc){e.mesh.position.addScaledVector(e.velocity,dt);e.velocity.y-=3*dt;e.mesh.scale.setScalar(Math.max(.05,e.life));}else{e.mesh.scale.setScalar(.7+Math.max(0,e.life)*1.5);e.mesh.children[0].material.opacity=Math.max(0,e.life/.32);}if(e.life<=0){e.mesh.parent?.remove(e.mesh);if(!e.arc)e.mesh.geometry.dispose();effects.splice(i,1);}}
-    const cameraTarget=V(hero.root.position.x,1.38,1.8);const cameraPos=V(hero.root.position.x*.5,4.05,-8.25);if(window.innerWidth/window.innerHeight<.72){cameraPos.y=4.2;cameraPos.z=-9.2;cameraTarget.z=1.6;}
+    const cameraTarget=V(hero.root.position.x+.3,1.38,2.1);const cameraPos=V(hero.root.position.x-.72,4.05,-8.25);if(window.innerWidth/window.innerHeight<.72){cameraPos.y=4.2;cameraPos.z=-9.2;cameraTarget.z=1.9;}
     camera.position.lerp(cameraPos,1-Math.exp(-dt*4));camera.lookAt(cameraTarget);
     updateHUD();renderer.render(scene,camera);
   }
