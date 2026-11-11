@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#101114">
+<link rel="icon" href="data:,">
+<title>Ashen Oath — Blade Trial</title>
+<style>
+:root{color-scheme:dark;--gold:#e5c27b;--cream:#f2e7d0;--muted:#a59a89;--red:#a7453c;--panel:rgba(14,15,17,.78)}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101114;font-family:Georgia,'Times New Roman',serif;color:var(--cream);touch-action:none}body{user-select:none;-webkit-user-select:none}#game{position:relative;width:100%;height:100%;overflow:hidden;background:#121316}canvas{position:absolute;inset:0;width:100%;height:100%;display:block}.shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.52),transparent 25%,transparent 68%,rgba(0,0,0,.54));}
+.hud{position:absolute;inset:0;pointer-events:none}.topline{position:absolute;top:max(22px,env(safe-area-inset-top));left:5.5%;right:5.5%;display:flex;align-items:flex-start;justify-content:space-between;gap:22px}.brand{font-size:11px;letter-spacing:.33em;text-transform:uppercase;color:#d4bd91;opacity:.87}.chapter{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#d2c8b3;text-align:center;margin-top:3px}.round{font-size:11px;letter-spacing:.19em;color:#d8caa9;text-align:right;text-transform:uppercase}.health-row{position:absolute;top:76px;left:5.5%;right:5.5%;display:flex;justify-content:space-between;gap:9%;align-items:center}.health-unit{width:37%;max-width:380px}.health-label{font:10px Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#e5dcc9;margin-bottom:8px;display:flex;justify-content:space-between}.bar{height:5px;background:rgba(236,226,205,.16);border:1px solid rgba(231,213,175,.22);box-shadow:0 2px 8px #0008;overflow:hidden}.fill{height:100%;width:100%;background:linear-gradient(90deg,#8f332c,#d78058);transition:width .34s ease;box-shadow:0 0 12px #d75439}.enemy .fill{background:linear-gradient(90deg,#b89a5d,#f0d99c);box-shadow:0 0 12px #dab963}.versus{color:#c1a977;font-size:12px;letter-spacing:.2em;opacity:.75;margin-top:16px}.bottom{position:absolute;bottom:max(24px,env(safe-area-inset-bottom));left:0;right:0;display:flex;justify-content:center;align-items:end;gap:16px}.hint{position:absolute;left:5.5%;bottom:max(28px,env(safe-area-inset-bottom));max-width:230px;color:#dfd3bc;font:10px/1.6 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;opacity:.78}.controls{display:flex;align-items:center;gap:11px;pointer-events:auto}.control{height:47px;min-width:106px;padding:0 17px;border:1px solid rgba(231,208,158,.43);background:linear-gradient(180deg,rgba(32,31,29,.84),rgba(12,13,14,.91));color:#e8d8b7;text-transform:uppercase;letter-spacing:.16em;font:10px Arial,sans-serif;cursor:pointer;box-shadow:0 8px 20px #0006;transition:.15s}.control:hover,.control:active{border-color:#e2c47f;background:rgba(108,83,43,.5);transform:translateY(-2px)}.control.primary{color:#171512;background:linear-gradient(135deg,#eddaa9,#b89452);border:0;font-weight:bold}.control:disabled{opacity:.42;cursor:default;transform:none}.meter{position:absolute;right:5.5%;bottom:max(30px,env(safe-area-inset-bottom));width:118px;text-align:right;color:#d7c39b;font:9px Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase}.meter-track{height:3px;margin-top:8px;background:#ffffff25}.meter-fill{height:100%;width:0;background:#d9bd7a;transition:width .2s}.veil{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,rgba(9,10,12,.5),rgba(6,7,9,.83));transition:opacity .4s;pointer-events:auto}.veil.hidden{opacity:0;pointer-events:none}.card{width:min(540px,88vw);padding:38px 44px 34px;text-align:center;background:linear-gradient(150deg,rgba(29,29,28,.9),rgba(11,12,14,.91));border:1px solid rgba(213,184,121,.38);box-shadow:0 25px 100px #0009;position:relative}.card:before,.card:after{content:'';position:absolute;left:18px;right:18px;height:1px;background:linear-gradient(90deg,transparent,#c8a768,transparent)}.card:before{top:12px}.card:after{bottom:12px}.eyebrow{font:10px Arial,sans-serif;letter-spacing:.38em;text-transform:uppercase;color:#d7bd81}.card h1{font-size:clamp(34px,6vw,57px);font-weight:400;letter-spacing:.12em;text-transform:uppercase;margin:15px 0 12px;color:#f1e7d4;text-shadow:0 4px 22px #000}.card p{color:#c4b8a2;font:14px/1.75 Arial,sans-serif;max-width:390px;margin:0 auto 25px}.card .control{min-width:190px;height:50px}.keys{margin-top:20px!important;margin-bottom:0!important;font-size:10px!important;letter-spacing:.09em;color:#928878!important}.toast{position:absolute;top:24%;left:0;right:0;text-align:center;font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:#f3dfb2;text-shadow:0 2px 14px #000;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:1}.mobile-hint{display:none}
+@media(max-width:700px){.topline{top:max(14px,env(safe-area-inset-top));left:4%;right:4%}.brand{font-size:9px}.chapter,.round{font-size:8px}.health-row{top:60px;left:4%;right:4%;gap:5%}.health-unit{width:42%}.health-label{font-size:8px;margin-bottom:5px}.versus{font-size:9px;margin-top:12px}.bottom{bottom:max(14px,env(safe-area-inset-bottom));gap:7px}.controls{gap:7px}.control{min-width:78px;height:42px;padding:0 9px;font-size:9px;letter-spacing:.1em}.control.primary{min-width:86px}.hint,.meter{display:none}.mobile-hint{display:block;position:absolute;top:17%;width:100%;text-align:center;font:9px Arial,sans-serif;letter-spacing:.1em;color:#e6d9c0;opacity:.7}.card{padding:32px 22px}.card p{font-size:12px}.keys{font-size:9px!important}}
+</style>
+</head>
+<body>
+<main id="game" aria-label="Ashen Oath sword fighting game">
+<canvas id="scene" aria-label="A sword duel in a ruined stone arena"></canvas><div class="shade"></div>
+<div class="hud">
+  <div class="topline"><div class="brand">✦ &nbsp; The Ashen Oath</div><div class="chapter">The Shattered Keep</div><div class="round" id="roundLabel">Trial I &nbsp; / &nbsp; 3</div></div>
+  <div class="health-row"><div class="health-unit"><div class="health-label"><span>Warden</span><span id="playerNum">100</span></div><div class="bar"><div class="fill" id="playerFill"></div></div></div><div class="versus">VS</div><div class="health-unit enemy"><div class="health-label"><span id="enemyName">The Hollow Knight</span><span id="enemyNum">100</span></div><div class="bar"><div class="fill" id="enemyFill"></div></div></div></div>
+  <div class="mobile-hint">SWIPE TO STRIKE &nbsp; · &nbsp; TIME YOUR GUARD</div>
+  <div class="toast" id="toast">Perfect parry</div>
+  <div class="hint">SWIPE ACROSS THE ARENA TO STRIKE<br>HOLD GUARD · EVADE THE RED FLASH</div>
+  <div class="bottom"><div class="controls"><button class="control" id="dodgeBtn">Evade</button><button class="control" id="guardBtn">Guard</button><button class="control primary" id="attackBtn">Strike</button></div></div>
+  <div class="meter">RIPOSTE<div class="meter-track"><div class="meter-fill" id="meterFill"></div></div></div>
+</div>
+<div class="veil" id="veil"><section class="card"><div class="eyebrow" id="cardEyebrow">A blade remembers</div><h1 id="cardTitle">Ashen Oath</h1><p id="cardText">At the edge of a fallen kingdom, only steel speaks. Read your rival, break their guard, and survive the trials of the Shattered Keep.</p><button class="control primary" id="startBtn">Enter the arena</button><p class="keys">SWIPE OR TAP STRIKE TO ATTACK &nbsp; · &nbsp; SPACE TO GUARD &nbsp; · &nbsp; SHIFT TO EVADE</p></section></div>
+</main>
+<script>
+(() => {
+'use strict';
+const canvas=document.getElementById('scene'),ctx=canvas.getContext('2d');
+const $=id=>document.getElementById(id);
+const ui={pfill:$('playerFill'),efill:$('enemyFill'),pnum:$('playerNum'),enum:$('enemyNum'),round:$('roundLabel'),name:$('enemyName'),veil:$('veil'),title:$('cardTitle'),eyebrow:$('cardEyebrow'),text:$('cardText'),start:$('startBtn'),guard:$('guardBtn'),dodge:$('dodgeBtn'),attack:$('attackBtn'),toast:$('toast'),meter:$('meterFill')};
+let W=0,H=0,D=1,scale=1,ox=0,oy=0,last=0,clock=0,mode='menu',round=1,combo=0,riposte=0,guarding=false,guardStarted=0,particles=[],swipe=null;
+const player={hp:100,max:100,attack:0,dodge:0,hit:0,flash:0,face:1};
+const enemy={hp:100,max:100,attack:0,wind:0,hit:0,flash:0,stun:0,step:0,face:-1};
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function resize(){const r=canvas.getBoundingClientRect();D=Math.min(devicePixelRatio||1,2);W=r.width;H=r.height;canvas.width=Math.round(W*D);canvas.height=Math.round(H*D);scale=Math.min(W/1000,H/600);ox=(W-1000*scale)/2;oy=(H-600*scale)/2;}
+new ResizeObserver(resize).observe(canvas);resize();
+function rr(x,y,w,h,r){ctx.beginPath();ctx.roundRect(x,y,w,h,r)}
+function poly(points,fill,stroke=null,width=1){ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke()}}
+function gradient(x,y,x2,y2,stops){const g=ctx.createLinearGradient(x,y,x2,y2);stops.forEach(s=>g.addColorStop(s[0],s[1]));return g}
+function ellipse(x,y,rx,ry,fill){ctx.beginPath();ctx.ellipse(x,y,rx,ry,0,0,Math.PI*2);ctx.fillStyle=fill;ctx.fill()}
+function drawBackground(t){
+ const sky=gradient(0,0,0,400,[[0,'#1b2029'],[.47,'#77706a'],[1,'#c89e70']]);ctx.fillStyle=sky;ctx.fillRect(0,0,1000,600);
+ // storm clouds and distant mountains
+ for(let i=0;i<8;i++){let x=((i*173+t*.5)%1200)-100,y=55+(i%3)*49;ctx.fillStyle=`rgba(18,21,28,${.10+(i%3)*.035})`;ellipse(x,y,120+(i%4)*19,18+(i%3)*9,ctx.fillStyle)}
+ poly([[0,304],[80,220],[133,286],[217,196],[303,302],[387,238],[478,311],[572,222],[654,298],[736,215],[823,299],[912,224],[1000,302],[1000,415],[0,415]],'#34373a');
+ poly([[0,333],[110,273],[180,326],[294,249],[376,340],[490,277],[579,334],[700,250],[804,328],[911,269],[1000,326],[1000,434],[0,434]],'#46413d');
+ // broken keep silhouette
+ ctx.fillStyle='#25282b';ctx.fillRect(389,202,222,193);ctx.fillRect(367,260,36,137);ctx.fillRect(596,248,39,150);ctx.fillRect(411,168,45,79);ctx.fillRect(542,179,50,73);
+ for(let x=390;x<620;x+=24){ctx.fillRect(x,192,12,15)}for(let x=369;x<405;x+=19)ctx.fillRect(x,247,11,16);for(let x=598;x<637;x+=19)ctx.fillRect(x,235,11,16);
+ // arch opening & lit interior
+ ctx.fillStyle='#101316';ctx.beginPath();ctx.moveTo(449,394);ctx.lineTo(449,298);ctx.arc(500,298,51,Math.PI,0);ctx.lineTo(551,394);ctx.closePath();ctx.fill();
+ ctx.fillStyle='rgba(213,145,82,.35)';ctx.beginPath();ctx.moveTo(472,392);ctx.lineTo(472,305);ctx.arc(500,305,28,Math.PI,0);ctx.lineTo(528,392);ctx.closePath();ctx.fill();
+ // flanking ruined pillars
+ for(const x of [104,849]){ctx.fillStyle='#343638';ctx.fillRect(x,208,45,205);ctx.fillRect(x-12,199,69,13);ctx.fillRect(x-8,238,61,9);ctx.fillRect(x-20,398,85,18);ctx.fillStyle='#24282a';ctx.fillRect(x+7,215,5,179);ctx.fillRect(x+29,215,5,179)}
+ // ground perspective
+ poly([[0,365],[1000,365],[1000,600],[0,600]],gradient(0,366,0,600,[[0,'#6e5948'],[.3,'#493b34'],[1,'#211f20']]));
+ ctx.strokeStyle='rgba(22,20,20,.43)';ctx.lineWidth=2;
+ for(let i=0;i<9;i++){let x=i*140-60;ctx.beginPath();ctx.moveTo(500,365);ctx.lineTo(x,600);ctx.stroke()}
+ for(let y=397;y<600;y+=Math.pow((y-360)/40,1.3)*15+12){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(1000,y);ctx.stroke()}
+ // scattered stones
+ for(let i=0;i<32;i++){const x=(i*127+43)%1000,y=398+(i*79)%196;ctx.fillStyle=i%2?'#393433':'#51443b';poly([[x,y],[x+14+(i%4)*4,y-2],[x+20,y+4],[x+5,y+7]],ctx.fillStyle)}
+ // drifting embers
+ for(let i=0;i<15;i++){const x=(i*173+Math.sin(t*.0005+i)*20)%1000,y=(600-((t*.025+i*83)%660));ctx.fillStyle=`rgba(246,175,95,${.12+Math.sin(t*.003+i)*.1})`;ellipse(x,y,1.3,1.3,ctx.fillStyle)}
+ // atmospheric light and vignette
+ const glow=ctx.createRadialGradient(500,327,20,500,327,430);glow.addColorStop(0,'rgba(239,177,106,.17)');glow.addColorStop(1,'rgba(239,177,106,0)');ctx.fillStyle=glow;ctx.fillRect(0,0,1000,600);
+}
+function sword(x1,y1,x2,y2,glow=false){ctx.save();ctx.lineCap='round';if(glow){ctx.shadowColor='#f6d891';ctx.shadowBlur=15}ctx.strokeStyle='#17191b';ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.strokeStyle=gradient(x1,y1,x2,y2,[[0,'#777878'],[.45,'#f3ead2'],[1,'#90999a']]);ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.strokeStyle='#4b3b26';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x1-9,y1);ctx.lineTo(x1+9,y1);ctx.stroke();ctx.restore()}
+function drawFighter(x,ground,s,side,t,pose,hp){
+ ctx.save();ctx.translate(x,ground);ctx.scale(s, s);const playerSide=side==='player';const flip=playerSide?1:-1;ctx.scale(flip,1);
+ // shadow
+ ellipse(0,0,58,11,'rgba(8,9,10,.48)');
+ // cape
+ const cape=playerSide?'#47332d':'#292b2e';poly([[-15,-125],[-39,-120],[-45,-34],[-28,-12],[-4,-27],[-7,-109]],cape,'#171a1c',2);
+ // trailing fabric highlight
+ poly([[-32,-111],[-39,-63],[-31,-36],[-23,-82]],playerSide?'#67463a':'#414143');
+ // legs with armor and boots
+ const stride=pose==='lunge'?18:pose==='dodge'?-20:pose==='attack'?8:Math.sin(t*.002+(playerSide?0:1)) * 2;
+ poly([[-18,-78],[-2,-75],[-4+stride,-35],[-16+stride,-8],[-34+stride,-8],[-29,-22]],'#393a3b','#17191b',2);
+ poly([[4,-78],[21,-77],[28,-39],[20-stride,-9],[2-stride,-9],[-1,-23]],'#484747','#17191b',2);
+ poly([[-36+stride,-10],[-8+stride,-10],[-4+stride,-4],[-8+stride,0],[-45+stride,0]],'#191a1b','#75634a',2);
+ poly([[-2-stride,-10],[24-stride,-10],[35-stride,-4],[32-stride,0],[-5-stride,0]],'#191a1b','#75634a',2);
+ // knee plates
+ poly([[-30,-39],[-13,-42],[-8,-31],[-23,-26]],'#9a8b6e','#d1bc8d',1.5);poly([[8,-41],[25,-39],[24,-28],[10,-27]],'#887c67','#c7b58d',1.5);
+ // torso tunic & cuirass
+ poly([[-23,-131],[21,-132],[30,-90],[21,-71],[-18,-73],[-31,-93]],playerSide?'#5c4538':'#393b3e','#17191b',3);
+ poly([[-22,-127],[0,-137],[22,-126],[24,-96],[0,-83],[-24,-98]],gradient(0,-137,25,-83,[[0,playerSide?'#c3b38f':'#a7a5a0'],[.5,playerSide?'#756d5d':'#696c70'],[1,playerSide?'#393a3a':'#45474a']]),'#202326',2);
+ poly([[-7,-130],[4,-130],[18,-95],[4,-88]],'rgba(238,222,182,.3)');
+ // segmented plates
+ for(let j=0;j<3;j++){ctx.strokeStyle='rgba(26,27,28,.65)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-20,-119+j*10);ctx.quadraticCurveTo(0,-112+j*10,20,-119+j*10);ctx.stroke()}
+ // belt and buckle
+ ctx.fillStyle='#30271f';ctx.fillRect(-25,-85,49,7);ctx.fillStyle='#c2a15f';rr(-4,-87,10,10,2);ctx.fill();
+ // shoulders
+ poly([[-28,-128],[-43,-122],[-39,-104],[-22,-103],[-17,-119]],playerSide?'#a89773':'#a2a3a1','#25282a',2);poly([[18,-127],[36,-123],[37,-105],[19,-101],[13,-118]],playerSide?'#93866c':'#888b8d','#25282a',2);
+ // arm shield side
+ poly([[-36,-117],[-47,-113],[-48,-83],[-35,-77],[-26,-96]],playerSide?'#55473a':'#43464a','#17191a',2);
+ // head/helmet
+ ellipse(0,-151,17,20,playerSide?'#bca77e':'#999a98');
+ poly([[-17,-158],[-14,-170],[0,-178],[15,-170],[18,-153],[12,-141],[-13,-141]],gradient(-16,-174,16,-141,[[0,playerSide?'#ded0ad':'#d0d0c7'],[.4,playerSide?'#90846b':'#888d90'],[1,playerSide?'#5e5a50':'#656b70']]),'#25282a',2);
+ // helmet crest & slit
+ poly([[-17,-163],[-28,-175],[-7,-170],[12,-178],[18,-166],[5,-160]],playerSide?'#a4844d':'#777a7b','#292a2a',1);
+ ctx.fillStyle='#141719';ctx.fillRect(-9,-157,19,4);ctx.fillStyle=playerSide?'#e7bd72':'#d99c62';ctx.fillRect(-7,-156,13,1.4);
+ // sword arm and sword (arm to hilt); poses
+ let armX=31,armY=-110,sx=48,sy=-100,ex=105,ey=-194;
+ if(pose==='attack'){armX=40;armY=-102;sx=53;sy=-95;ex=118;ey=-154}
+ if(pose==='wind'){armX=32;armY=-113;sx=47;sy=-110;ex=22;ey=-219}
+ if(pose==='lunge'){armX=41;armY=-106;sx=56;sy=-98;ex=154;ey=-133}
+ if(pose==='guard'){armX=27;armY=-110;sx=41;sy=-118;ex=106;ey=-205}
+ if(pose==='dodge'){armX=34;armY=-112;sx=48;sy=-119;ex=104;ey=-193}
+ if(pose==='hit'){armX=32;armY=-110;sx=46;sy=-116;ex=72;ey=-202}
+ poly([[24,-124],[38,-123],[armX+3,armY],[armX-9,armY+6]],playerSide?'#a89773':'#929396','#282a2b',2);
+ ellipse(armX,armY,7,8,'#b49e76');sword(sx,sy,ex,ey,pose==='attack'||pose==='lunge');
+ // subtle engraved shield crest
+ ctx.strokeStyle='rgba(225,206,160,.45)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(-38,-107);ctx.lineTo(-34,-91);ctx.lineTo(-43,-86);ctx.lineTo(-49,-97);ctx.stroke();
+ if(hp<35){ctx.strokeStyle='rgba(139,37,29,.8)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-5,-130);ctx.lineTo(7,-105);ctx.lineTo(-2,-95);ctx.stroke()}
+ ctx.restore();
+}
+function drawScene(t){
+ ctx.setTransform(D,0,0,D,0,0);ctx.clearRect(0,0,W,H);
+ const portrait=W/H<.78;
+ let floor,pX,eX,actorScale;
+ if(portrait){ctx.save();ctx.scale(W/1000,H/600);drawBackground(t);ctx.restore();floor=H*.78;actorScale=Math.min(W/470,H/500)*.88;pX=W*.28+(player.dodge>0?-36:player.attack>0?12:0);eX=W*.72+(enemy.attack>0?-18:enemy.stun>0?10:0)}
+ else{ctx.translate(ox,oy);ctx.scale(scale,scale);drawBackground(t);floor=430;actorScale=1.37;pX=316+(player.dodge>0?-48:player.attack>0?16:0);eX=684+(enemy.attack>0?-22:enemy.stun>0?12:0)}
+ let pPose=player.hit>0?'hit':player.dodge>0?'dodge':player.attack>0?'attack':guarding?'guard':'idle';let ePose=enemy.hit>0?'hit':enemy.stun>0?'hit':enemy.attack>0?'lunge':enemy.wind>0?'wind':'idle';
+ drawFighter(pX,floor,actorScale,'player',t,pPose,player.hp);drawFighter(eX,floor,actorScale,'enemy',t,ePose,enemy.hp);
+ // vignette and film grain flecks
+ if(portrait){const vig=ctx.createRadialGradient(W/2,H*.54,100,W/2,H*.54,Math.max(W,H)*.72);vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(0,0,0,.4)');ctx.fillStyle=vig;ctx.fillRect(0,0,W,H)}
+ else{const vig=ctx.createRadialGradient(500,300,180,500,300,620);vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(0,0,0,.43)');ctx.fillStyle=vig;ctx.fillRect(0,0,1000,600)}
+ for(const p of particles){const px=portrait?p.x/1000*W:p.x,py=portrait?p.y/600*H:p.y;ctx.globalAlpha=p.life/p.max;ctx.fillStyle=p.color;ellipse(px,py,p.r,p.r,p.color)}ctx.globalAlpha=1;
+ if(enemy.wind>0){ctx.strokeStyle=`rgba(173,57,43,${.3+Math.sin(t*.018)*.3})`;ctx.lineWidth=3;ctx.beginPath();ctx.arc(portrait?eX-25*actorScale:eX-25,portrait?floor-112*actorScale:315,38*actorScale,Math.PI*1.1,Math.PI*1.8);ctx.stroke()}
+}
+function burst(x,y,color,n=12){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=35+Math.random()*150;particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-40,r:1+Math.random()*3,life:.35+Math.random()*.5,max:.85,color})}}
+function toast(msg){ui.toast.textContent=msg;ui.toast.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>ui.toast.classList.remove('show'),900)}
+function updateHUD(){ui.pfill.style.width=`${clamp(player.hp/player.max*100,0,100)}%`;ui.efill.style.width=`${clamp(enemy.hp/enemy.max*100,0,100)}%`;ui.pnum.textContent=Math.ceil(player.hp);ui.enum.textContent=Math.ceil(enemy.hp);ui.round.textContent=`Trial ${['I','II','III'][round-1]||'III'}  /  3`;ui.meter.style.width=`${riposte}%`;ui.guard.classList.toggle('primary',guarding);ui.attack.disabled=mode!=='play';ui.dodge.disabled=mode!=='play'}
+function showCard(type){mode=type;ui.veil.classList.remove('hidden');if(type==='menu'){ui.eyebrow.textContent='A blade remembers';ui.title.textContent='Ashen Oath';ui.text.textContent='At the edge of a fallen kingdom, only steel speaks. Read your rival, break their guard, and survive the trials of the Shattered Keep.';ui.start.textContent='Enter the arena'}else if(type==='victory'){ui.eyebrow.textContent='The oath endures';ui.title.textContent='Triumph';ui.text.textContent='The Shattered Keep falls silent. Your blade has earned its name.';ui.start.textContent='Fight again'}else{ui.eyebrow.textContent='The trial is over';ui.title.textContent='Fallen';ui.text.textContent='The Hollow Knight claims the arena. Steel yourself and return to the fight.';ui.start.textContent='Rise again'}}
+function begin(){round=1;player.hp=100;player.max=100;player.attack=0;player.dodge=0;player.hit=0;combo=0;riposte=0;guarding=false;ui.guard.classList.remove('primary');newEnemy();ui.veil.classList.add('hidden');mode='play';last=performance.now();}
+function newEnemy(){enemy.max=100+((round-1)*12);enemy.hp=enemy.max;enemy.wind=0;enemy.attack=0;enemy.hit=0;enemy.stun=0;enemy.step=0;ui.name.textContent=['The Hollow Knight','The Red Reaver','The Ashen King'][round-1]||'The Ashen King';updateHUD()}
+function doAttack(direction='slash'){
+ if(mode!=='play'||player.attack>0||player.dodge>0)return;
+ player.attack=.42;player.hit=0;combo++;let damage=direction==='thrust'?16:direction==='overhead'?19:13;damage+=Math.min(combo,5)*1.5;
+ if(enemy.wind>0){damage+=8;enemy.wind=0;enemy.stun=.85;riposte=clamp(riposte+27,0,100);toast('Steel interrupts');burst(655,300,'#e8c879',18)}else if(enemy.stun>0){damage+=7;riposte=clamp(riposte+14,0,100)}
+ enemy.hp=Math.max(0,enemy.hp-damage);enemy.hit=.22;burst(670,335,direction==='overhead'?'#f0d39a':'#d7c58d',11);updateHUD();
+ if(enemy.hp<=0){setTimeout(()=>{if(mode!=='play')return;if(round<3){round++;player.hp=Math.min(100,player.hp+22);newEnemy();toast('A new challenger');}else showCard('victory')},650)}
+}
+function doDodge(){if(mode!=='play'||player.dodge>0)return;player.dodge=.62;player.attack=0;guarding=false;ui.guard.classList.remove('primary');toast('Evade')}
+function setGuard(on){if(mode!=='play')return;guarding=on;if(on)guardStarted=performance.now();ui.guard.classList.toggle('primary',on)}
+function enemyStrike(){if(mode!=='play')return;if(player.dodge>0){toast('Clean evade');riposte=clamp(riposte+20,0,100);burst(360,345,'#c7d6d1',8)}else if(guarding){const perfect=performance.now()-guardStarted<420;if(perfect){toast('Perfect parry');riposte=clamp(riposte+38,0,100);enemy.stun=1.05;burst(430,300,'#f4d18a',20)}else{toast('Guarded');player.hp=Math.max(0,player.hp-5);riposte=clamp(riposte+8,0,100);burst(375,333,'#aa9b78',8)}}else{player.hp=Math.max(0,player.hp-15-round*2);player.hit=.35;combo=0;burst(355,322,'#a64c3c',13);toast('Struck')};enemy.attack=.32;updateHUD();if(player.hp<=0)setTimeout(()=>{if(mode==='play')showCard('defeat')},400)}
+function update(dt,t){clock=t;player.attack=Math.max(0,player.attack-dt);player.dodge=Math.max(0,player.dodge-dt);player.hit=Math.max(0,player.hit-dt);enemy.hit=Math.max(0,enemy.hit-dt);enemy.attack=Math.max(0,enemy.attack-dt);enemy.stun=Math.max(0,enemy.stun-dt);enemy.step=Math.max(0,enemy.step-dt);
+ if(mode==='play'&&enemy.hp>0&&enemy.stun<=0&&enemy.wind<=0&&enemy.attack<=0){enemy.step-=dt;if(enemy.step<=0){enemy.wind=.88;enemy.step=2.15+Math.random()*1.1}}
+ if(enemy.wind>0){enemy.wind-=dt;if(enemy.wind<=0)enemyStrike()}
+ for(let i=particles.length-1;i>=0;i--){const p=particles[i];p.x+=p.vx*dt;p.y+=p.vy*dt;p.vy+=210*dt;p.life-=dt;if(p.life<=0)particles.splice(i,1)}
+ updateHUD();drawScene(t)}
+function canvasPoint(e){const r=canvas.getBoundingClientRect();return{x:(e.clientX-r.left-ox)/scale,y:(e.clientY-r.top-oy)/scale}}
+canvas.addEventListener('pointerdown',e=>{swipe={...canvasPoint(e),time:performance.now()};canvas.setPointerCapture(e.pointerId)});
+canvas.addEventListener('pointerup',e=>{if(!swipe)return;const p=canvasPoint(e),dx=p.x-swipe.x,dy=p.y-swipe.y,d=Math.hypot(dx,dy);if(d>35){const dir=Math.abs(dx)>Math.abs(dy)?'slash':dy<0?'overhead':'thrust';doAttack(dir)}swipe=null});
+ui.attack.addEventListener('click',()=>doAttack());ui.dodge.addEventListener('click',doDodge);ui.guard.addEventListener('pointerdown',e=>{e.preventDefault();setGuard(true)});['pointerup','pointercancel','pointerleave'].forEach(ev=>ui.guard.addEventListener(ev,()=>setGuard(false)));
+ui.start.addEventListener('click',begin);
+window.addEventListener('keydown',e=>{if(e.repeat)return;if(e.code==='Space'){e.preventDefault();setGuard(true)}if(e.code==='ShiftLeft'||e.code==='ShiftRight')doDodge();if(e.code==='Enter'&&mode!=='play')begin();if(e.code==='KeyA'||e.code==='ArrowLeft'||e.code==='ArrowRight')doAttack()});window.addEventListener('keyup',e=>{if(e.code==='Space')setGuard(false)});
+function frame(t){const dt=Math.min(.05,(t-last)/1000||0);last=t;update(dt,t);requestAnimationFrame(frame)}
+showCard('menu');requestAnimationFrame(frame);
+})();
+</script>
+</main>
+</body>
+</html>
