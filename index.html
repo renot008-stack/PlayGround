@@ -3,31 +3,129 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#101114">
+<meta name="theme-color" content="#080d0e">
 <link rel="icon" href="data:,">
-<title>Ashen Oath — Blade Trial</title>
+<title>Железный хор — Проба</title>
 <style>
-:root{color-scheme:dark;--gold:#e5c27b;--cream:#f2e7d0;--muted:#a59a89;--red:#a7453c;--panel:rgba(14,15,17,.78)}
-*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#101114;font-family:Georgia,'Times New Roman',serif;color:var(--cream);touch-action:none}body{user-select:none;-webkit-user-select:none}#game{position:relative;width:100%;height:100%;overflow:hidden;background:#121316}canvas{position:absolute;inset:0;width:100%;height:100%;display:block}.shade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(0,0,0,.52),transparent 25%,transparent 68%,rgba(0,0,0,.54));}
-.hud{position:absolute;inset:0;pointer-events:none}.topline{position:absolute;top:max(22px,env(safe-area-inset-top));left:5.5%;right:5.5%;display:flex;align-items:flex-start;justify-content:space-between;gap:22px}.brand{font-size:11px;letter-spacing:.33em;text-transform:uppercase;color:#d4bd91;opacity:.87}.chapter{font-size:10px;letter-spacing:.26em;text-transform:uppercase;color:#d2c8b3;text-align:center;margin-top:3px}.round{font-size:11px;letter-spacing:.19em;color:#d8caa9;text-align:right;text-transform:uppercase}.health-row{position:absolute;top:76px;left:5.5%;right:5.5%;display:flex;justify-content:space-between;gap:9%;align-items:center}.health-unit{width:37%;max-width:380px}.health-label{font:10px Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:#e5dcc9;margin-bottom:8px;display:flex;justify-content:space-between}.bar{height:5px;background:rgba(236,226,205,.16);border:1px solid rgba(231,213,175,.22);box-shadow:0 2px 8px #0008;overflow:hidden}.fill{height:100%;width:100%;background:linear-gradient(90deg,#8f332c,#d78058);transition:width .34s ease;box-shadow:0 0 12px #d75439}.enemy .fill{background:linear-gradient(90deg,#b89a5d,#f0d99c);box-shadow:0 0 12px #dab963}.versus{color:#c1a977;font-size:12px;letter-spacing:.2em;opacity:.75;margin-top:16px}.bottom{position:absolute;bottom:max(24px,env(safe-area-inset-bottom));left:0;right:0;display:flex;justify-content:center;align-items:end;gap:16px}.hint{position:absolute;left:5.5%;bottom:max(28px,env(safe-area-inset-bottom));max-width:230px;color:#dfd3bc;font:10px/1.6 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;opacity:.78}.controls{display:flex;align-items:center;gap:11px;pointer-events:auto}.control{height:47px;min-width:106px;padding:0 17px;border:1px solid rgba(231,208,158,.43);background:linear-gradient(180deg,rgba(32,31,29,.84),rgba(12,13,14,.91));color:#e8d8b7;text-transform:uppercase;letter-spacing:.16em;font:10px Arial,sans-serif;cursor:pointer;box-shadow:0 8px 20px #0006;transition:.15s}.control:hover,.control:active{border-color:#e2c47f;background:rgba(108,83,43,.5);transform:translateY(-2px)}.control.primary{color:#171512;background:linear-gradient(135deg,#eddaa9,#b89452);border:0;font-weight:bold}.control:disabled{opacity:.42;cursor:default;transform:none}.meter{position:absolute;right:5.5%;bottom:max(30px,env(safe-area-inset-bottom));width:118px;text-align:right;color:#d7c39b;font:9px Arial,sans-serif;letter-spacing:.18em;text-transform:uppercase}.meter-track{height:3px;margin-top:8px;background:#ffffff25}.meter-fill{height:100%;width:0;background:#d9bd7a;transition:width .2s}.veil{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,rgba(9,10,12,.5),rgba(6,7,9,.83));transition:opacity .4s;pointer-events:auto}.veil.hidden{opacity:0;pointer-events:none}.card{width:min(540px,88vw);padding:38px 44px 34px;text-align:center;background:linear-gradient(150deg,rgba(29,29,28,.9),rgba(11,12,14,.91));border:1px solid rgba(213,184,121,.38);box-shadow:0 25px 100px #0009;position:relative}.card:before,.card:after{content:'';position:absolute;left:18px;right:18px;height:1px;background:linear-gradient(90deg,transparent,#c8a768,transparent)}.card:before{top:12px}.card:after{bottom:12px}.eyebrow{font:10px Arial,sans-serif;letter-spacing:.38em;text-transform:uppercase;color:#d7bd81}.card h1{font-size:clamp(34px,6vw,57px);font-weight:400;letter-spacing:.12em;text-transform:uppercase;margin:15px 0 12px;color:#f1e7d4;text-shadow:0 4px 22px #000}.card p{color:#c4b8a2;font:14px/1.75 Arial,sans-serif;max-width:390px;margin:0 auto 25px}.card .control{min-width:190px;height:50px}.keys{margin-top:20px!important;margin-bottom:0!important;font-size:10px!important;letter-spacing:.09em;color:#928878!important}.toast{position:absolute;top:24%;left:0;right:0;text-align:center;font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:#f3dfb2;text-shadow:0 2px 14px #000;opacity:0;transition:opacity .2s;pointer-events:none}.toast.show{opacity:1}.mobile-hint{display:none}
-@media(max-width:700px){.topline{top:max(14px,env(safe-area-inset-top));left:4%;right:4%}.brand{font-size:9px}.chapter,.round{font-size:8px}.health-row{top:60px;left:4%;right:4%;gap:5%}.health-unit{width:42%}.health-label{font-size:8px;margin-bottom:5px}.versus{font-size:9px;margin-top:12px}.bottom{bottom:max(14px,env(safe-area-inset-bottom));gap:7px}.controls{gap:7px}.control{min-width:78px;height:42px;padding:0 9px;font-size:9px;letter-spacing:.1em}.control.primary{min-width:86px}.hint,.meter{display:none}.mobile-hint{display:block;position:absolute;top:17%;width:100%;text-align:center;font:9px Arial,sans-serif;letter-spacing:.1em;color:#e6d9c0;opacity:.7}.card{padding:32px 22px}.card p{font-size:12px}.keys{font-size:9px!important}}
-.combat-cue{position:absolute;top:27%;left:50%;transform:translateX(-50%);max-width:90%;padding:9px 16px;border:1px solid rgba(204,87,64,.55);background:rgba(22,14,13,.64);color:#f0b29b;text-align:center;font:10px/1.4 Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;text-shadow:0 1px 8px #000;transition:color .2s,border-color .2s;pointer-events:none}.combat-cue.open{color:#f2d89e;border-color:rgba(229,194,123,.72);background:rgba(28,24,16,.72)}@media(max-width:700px){.combat-cue{top:23%;font-size:9px;padding:8px 10px;letter-spacing:.08em}}
+:root{color-scheme:dark;--ink:#080d0e;--iron:#111a1b;--bone:#f0e7d4;--muted:#98a7a1;--dim:#6d7b77;--brass:#c8a25a;--brass-soft:#ecd49b;--teal:#78b0a8;--blood:#c25b42;--panel:rgba(9,15,16,.82);--safe-bottom:max(22px,env(safe-area-inset-bottom))}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--ink);font-family:Georgia,'Times New Roman',serif;color:var(--bone);touch-action:none}
+body{user-select:none;-webkit-user-select:none}
+#game{position:relative;width:100%;height:100%;overflow:hidden;background:#0a1011}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.shade{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 42%,transparent 32%,rgba(1,4,5,.52) 100%),linear-gradient(180deg,rgba(1,4,5,.62),transparent 22%,transparent 70%,rgba(1,4,5,.7))}
+.hud{position:absolute;inset:0;pointer-events:none}
+
+/* ── Masthead ───────────────────────────────────────────────── */
+.masthead{position:absolute;top:max(24px,env(safe-area-inset-top));left:5%;right:5%;display:flex;align-items:flex-start;justify-content:space-between;gap:24px}
+.brand{display:flex;align-items:center;gap:12px}
+.mark{color:var(--brass);font-size:22px;line-height:1;text-shadow:0 0 18px rgba(200,162,90,.5)}
+.brand h1{margin:0;font-size:15px;font-weight:400;letter-spacing:.3em;text-transform:uppercase;color:var(--bone)}
+.brand p{margin:4px 0 0;font:9px Arial,sans-serif;letter-spacing:.28em;text-transform:uppercase;color:var(--dim)}
+.round{font:10px Arial,sans-serif;letter-spacing:.24em;text-transform:uppercase;color:var(--brass-soft);padding-top:6px;white-space:nowrap}
+
+/* ── Health ─────────────────────────────────────────────────── */
+.health-row{position:absolute;top:96px;left:5%;right:5%;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:26px}
+.health-unit{width:100%;max-width:430px}
+.health-unit.enemy{justify-self:end}
+.health-label{display:flex;justify-content:space-between;gap:10px;margin-bottom:8px;font:9px Arial,sans-serif;letter-spacing:.2em;text-transform:uppercase;color:#ded3bd}
+.health-unit.enemy .health-label{color:var(--brass-soft)}
+.bar{height:6px;background:rgba(236,226,205,.1);border:1px solid rgba(200,162,90,.24);box-shadow:0 2px 10px #0009;overflow:hidden}
+.fill{height:100%;width:100%;background:linear-gradient(90deg,#35645f,#8fd0c4);box-shadow:0 0 14px rgba(120,176,168,.65);transition:width .34s ease}
+.health-unit.enemy .fill{background:linear-gradient(90deg,#9b7136,#efd39a);box-shadow:0 0 14px rgba(216,178,106,.55)}
+.versus{position:relative;color:var(--brass);font-size:15px;line-height:1;opacity:.8;padding:0 4px}
+.versus:before,.versus:after{content:'';position:absolute;top:50%;width:16px;height:1px;background:linear-gradient(90deg,transparent,rgba(200,162,90,.6))}
+.versus:before{right:100%}.versus:after{left:100%;transform:rotate(180deg)}
+
+/* ── Combat cue ─────────────────────────────────────────────── */
+.combat-cue{position:absolute;top:25%;left:50%;transform:translateX(-50%);max-width:92%;padding:11px 22px;border:1px solid rgba(200,162,90,.55);background:var(--panel);color:var(--brass-soft);text-align:center;font:11px/1.5 Arial,sans-serif;letter-spacing:.16em;text-transform:uppercase;text-shadow:0 1px 10px #000;transition:color .2s,border-color .2s,background .2s,box-shadow .2s;pointer-events:none}
+.combat-cue.specific{color:#ff9d7d;border-color:rgba(194,91,66,.86);background:rgba(34,12,10,.8);box-shadow:0 0 30px rgba(194,91,66,.22)}
+.combat-cue.open{color:#171208;border-color:var(--brass-soft);background:linear-gradient(135deg,#ecd49b,#c8a25a);box-shadow:0 0 34px rgba(200,162,90,.32)}
+
+/* ── Dodge zones ────────────────────────────────────────────── */
+.dodge-zone{position:absolute;top:31%;bottom:20%;width:14%;max-width:132px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;pointer-events:none;color:var(--dim);transition:color .18s,background .18s,box-shadow .18s}
+.dodge-zone.left{left:0;background:linear-gradient(90deg,rgba(200,162,90,.1),transparent);border-left:1px solid rgba(200,162,90,.16)}
+.dodge-zone.right{right:0;background:linear-gradient(270deg,rgba(200,162,90,.1),transparent);border-right:1px solid rgba(200,162,90,.16)}
+.dodge-zone .zone-label{writing-mode:vertical-rl;font:9px Arial,sans-serif;letter-spacing:.42em;text-transform:uppercase}
+.dodge-zone.right .zone-label{transform:rotate(180deg)}
+.dodge-zone .zone-arrow{font:26px/0.5 Georgia,serif;color:var(--brass);opacity:.55}
+.dodge-zone.active{color:var(--bone);background:rgba(200,162,90,.16);box-shadow:inset 0 0 40px rgba(200,162,90,.16)}
+.dodge-zone.active .zone-arrow{opacity:1;text-shadow:0 0 14px rgba(236,212,155,.8)}
+
+/* ── Bottom UI ──────────────────────────────────────────────── */
+.toast{position:absolute;top:21%;left:0;right:0;text-align:center;font:11px Arial,sans-serif;letter-spacing:.3em;text-transform:uppercase;color:var(--brass-soft);text-shadow:0 2px 16px #000;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+.hint{position:absolute;left:5%;bottom:calc(var(--safe-bottom) + 6px);max-width:260px;color:#cfc3ab;font:9px/1.9 Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase;opacity:.74}
+.hint b{color:var(--brass-soft);font-weight:400}
+.mobile-hint{display:none}
+.bottom{position:absolute;bottom:var(--safe-bottom);left:0;right:0;display:flex;justify-content:center}
+.guard{pointer-events:auto;width:84px;height:84px;border-radius:50%;border:1px solid rgba(200,162,90,.6);background:radial-gradient(circle at 50% 38%,rgba(43,54,53,.96),rgba(9,14,15,.98));color:var(--bone);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;box-shadow:0 14px 34px #000a,inset 0 0 0 5px rgba(200,162,90,.08);transition:.15s;text-transform:uppercase}
+.guard .guard-mark{color:var(--brass);font-size:15px;line-height:1}
+.guard .guard-text{font:9px Arial,sans-serif;letter-spacing:.26em;color:#d9cdb4}
+.guard:hover,.guard.primary{border-color:var(--brass-soft);background:radial-gradient(circle at 50% 38%,#e3c787,#b28a48);box-shadow:0 14px 38px #000a,0 0 32px rgba(200,162,90,.36);transform:translateY(-2px)}
+.guard.primary .guard-text,.guard.primary .guard-mark{color:#15100a}
+.guard:disabled{opacity:.35;cursor:default;transform:none;box-shadow:0 10px 24px #0008}
+.meter{position:absolute;right:5%;bottom:calc(var(--safe-bottom) + 10px);width:142px;text-align:right;color:#cfc3ab;font:9px Arial,sans-serif;letter-spacing:.24em;text-transform:uppercase;opacity:.8}
+.meter-track{height:2px;margin-top:9px;background:rgba(236,226,205,.14)}
+.meter-fill{height:100%;width:0;background:linear-gradient(90deg,#78b0a8,#ecd49b);transition:width .2s}
+
+/* ── Start / end card ───────────────────────────────────────── */
+.veil{position:absolute;inset:0;display:grid;place-items:center;background:radial-gradient(ellipse at center,rgba(4,8,9,.42),rgba(2,5,6,.88));transition:opacity .4s;pointer-events:auto}
+.veil.hidden{opacity:0;pointer-events:none}
+.card{position:relative;width:min(570px,90vw);padding:44px 48px 34px;text-align:center;background:linear-gradient(155deg,rgba(20,28,29,.97),rgba(7,11,12,.98));border:1px solid rgba(200,162,90,.4);box-shadow:0 0 0 1px rgba(0,0,0,.6),0 30px 120px #000b;overflow:hidden}
+.card:before{content:'';position:absolute;inset:9px;border:1px solid rgba(200,162,90,.12);pointer-events:none}
+.card:after{content:'';position:absolute;top:0;left:18%;right:18%;height:1px;background:linear-gradient(90deg,transparent,var(--brass),transparent);opacity:.7}
+.card-ornament{color:var(--brass);font-size:18px;letter-spacing:.3em;margin-bottom:12px;text-shadow:0 0 20px rgba(200,162,90,.4)}
+.eyebrow{font:9px Arial,sans-serif;letter-spacing:.42em;text-transform:uppercase;color:#cbb37d}
+.card h1{margin:14px 0 18px;font-size:clamp(32px,6vw,54px);font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:var(--bone);text-shadow:0 5px 26px #000}
+.card p#cardText{margin:0 auto 26px;max-width:430px;color:#b9aea0;font:13px/1.9 Arial,sans-serif}
+.start{height:50px;min-width:216px;padding:0 26px;border:1px solid rgba(236,212,155,.7);background:linear-gradient(135deg,#ecd49b,#bd9450);color:#15100a;font:10px Arial,sans-serif;letter-spacing:.22em;text-transform:uppercase;cursor:pointer;box-shadow:0 12px 30px #0008;transition:.15s}
+.start:hover,.start:active{background:linear-gradient(135deg,#f6e4b6,#cfa65e);transform:translateY(-2px)}
+.keys{margin:20px 0 0;color:#7f8c87;font:9px/1.7 Arial,sans-serif;letter-spacing:.1em;text-transform:uppercase}
+
+@media(max-width:700px){
+  .masthead{top:max(14px,env(safe-area-inset-top));left:4%;right:4%;gap:12px}
+  .brand{gap:8px}.mark{font-size:17px}.brand h1{font-size:11px;letter-spacing:.2em}.brand p{font-size:8px;letter-spacing:.16em}.round{font-size:8px;letter-spacing:.14em;padding-top:3px}
+  .health-row{top:62px;left:4%;right:4%;gap:10px}
+  .health-label{font-size:8px;letter-spacing:.12em;margin-bottom:6px}
+  .versus{font-size:10px}.versus:before,.versus:after{width:8px}
+  .combat-cue{top:20%;font-size:9.5px;letter-spacing:.09em;padding:8px 11px}
+  .toast{top:16%;font-size:9px;letter-spacing:.18em}
+  .dodge-zone{top:30%;bottom:22%;width:20%;gap:6px}.dodge-zone .zone-label{font-size:8px;letter-spacing:.3em}.dodge-zone .zone-arrow{font-size:22px}
+  .mobile-hint{display:block;position:absolute;top:15%;width:100%;text-align:center;font:8px Arial,sans-serif;letter-spacing:.09em;text-transform:uppercase;color:#c8bda7;opacity:.62;padding:0 12%}
+  .hint,.meter{display:none}
+  .bottom{bottom:max(14px,env(safe-area-inset-bottom))}
+  .guard{width:68px;height:68px}.guard .guard-mark{font-size:13px}.guard .guard-text{font-size:8px;letter-spacing:.18em}
+  .card{padding:32px 24px 26px}.card h1{font-size:clamp(28px,9vw,40px)}.card p#cardText{font-size:11.5px;line-height:1.8}.start{min-width:190px;height:46px}.keys{font-size:8px}
+}
+@media(max-width:700px) and (max-height:520px){
+  .mobile-hint{display:none}.card{padding:24px 22px}.card-ornament{display:none}.card p#cardText{margin-bottom:16px}.keys{margin-top:12px}
+}
 </style>
 </head>
 <body>
-<main id="game" aria-label="Ashen Oath sword fighting game">
-<canvas id="scene" aria-label="A sword duel in a ruined stone arena"></canvas><div class="shade"></div>
+<main id="game" aria-label="Железный хор — дуэль в обители последнего звона">
+<canvas id="scene" aria-label="Дуэль среди колонн и погасших витражей"></canvas><div class="shade"></div>
 <div class="hud">
-  <div class="topline"><div class="brand">✦ &nbsp; Ashen Oath</div><div class="chapter">Разрушенная крепость</div><div class="round" id="roundLabel">Испытание I / 3</div></div>
-  <div class="health-row"><div class="health-unit"><div class="health-label"><span>Страж</span><span id="playerNum">100</span></div><div class="bar"><div class="fill" id="playerFill"></div></div></div><div class="versus">VS</div><div class="health-unit enemy"><div class="health-label"><span id="enemyName">Полый рыцарь</span><span id="enemyNum">100</span></div><div class="bar"><div class="fill" id="enemyFill"></div></div></div></div>
-  <div class="mobile-hint">СВАЙП — УДАР ПОСЛЕ СЕРИИ &nbsp; · &nbsp; ЩИТ / УКЛОН / ПАРИРОВАНИЕ</div>
-  <div class="toast" id="toast">Идеальное парирование</div>
-  <div class="combat-cue" id="combatCue" aria-live="polite">ЧИТАЙ ТЕЛЕГРАФ АТАКИ</div>
-  <div class="hint">БЛОКИРУЙ / УКЛОНЯЙСЯ ПО ПОДСКАЗКЕ<br>ПАРИРУЙ УДАРОМ НАВСТРЕЧУ<br>АТАКУЙ В ОКНО ПОСЛЕ СЕРИИ</div>
-  <div class="bottom"><div class="controls"><button class="control" id="dodgeBtn">Уклон</button><button class="control" id="guardBtn">Щит</button><button class="control primary" id="attackBtn">Удар</button></div></div>
-  <div class="meter">ОТВЕТНЫЙ УДАР<div class="meter-track"><div class="meter-fill" id="meterFill"></div></div></div>
+  <header class="masthead">
+    <div class="brand"><span class="mark">◈</span><div><h1>Железный хор</h1><p>Обитель последнего звона</p></div></div>
+    <div class="round" id="roundLabel">Глас I / III</div>
+  </header>
+  <div class="health-row">
+    <div class="health-unit"><div class="health-label"><span>Слушатель</span><span id="playerNum">100</span></div><div class="bar"><div class="fill" id="playerFill"></div></div></div>
+    <div class="versus">✦</div>
+    <div class="health-unit enemy"><div class="health-label"><span id="enemyName">Слепой послушник</span><span id="enemyNum">100</span></div><div class="bar"><div class="fill" id="enemyFill"></div></div></div>
+  </div>
+  <div class="combat-cue" id="combatCue" aria-live="polite">СЛУШАЙ ЗАМАХ · БОЛЬШИНСТВО УДАРОВ — ЛЮБАЯ ЗАЩИТА</div>
+  <div class="toast" id="toast"></div>
+  <div class="dodge-zone left" id="dodgeLeft" aria-hidden="true"><span class="zone-arrow">‹</span><span class="zone-label">Уклон</span></div>
+  <div class="dodge-zone right" id="dodgeRight" aria-hidden="true"><span class="zone-arrow">›</span><span class="zone-label">Уклон</span></div>
+  <div class="mobile-hint">Свайп — удар · Тап слева / справа — уклон · Щит — держи</div>
+  <div class="hint"><b>Свайп</b> — встречный удар / атака<br><b>Тап слева / справа</b> — уклонение<br><b>Щит</b> — держи, пока идёт удар</div>
+  <div class="bottom"><button class="guard" id="guardBtn" aria-label="Держать щит"><span class="guard-mark">◈</span><span class="guard-text">Щит</span></button></div>
+  <div class="meter"><span>Тишина</span><div class="meter-track"><div class="meter-fill" id="meterFill"></div></div></div>
 </div>
-<div class="veil" id="veil"><section class="card"><div class="eyebrow" id="cardEyebrow">Сталь помнит</div><h1 id="cardTitle">Ashen Oath</h1><p id="cardText">At the edge of a fallen kingdom, only steel speaks. Read your rival, break their guard, and survive the trials of the Shattered Keep.</p><button class="control primary" id="startBtn">Enter the arena</button><p class="keys">СВАЙП — УДАР ПОСЛЕ СЕРИИ ИЛИ ПАРИРОВАНИЕ УКОЛА &nbsp; · &nbsp; SPACE — ЩИТ &nbsp; · &nbsp; SHIFT — УКЛОНЕНИЕ</p></section></div>
+<div class="veil" id="veil"><section class="card"><div class="card-ornament">◇ ◈ ◇</div><div class="eyebrow" id="cardEyebrow">Тишина перед нотой</div><h1 id="cardTitle">Железный хор</h1><p id="cardText">Обитель пела одну ноту, пока камень не стал железом. Ты — последний слушатель, пришедший оборвать песню.</p><button class="start" id="startBtn">Войти в обитель</button><p class="keys">Свайп — парирование и атака · Space — щит · Тап слева / справа, Shift, Q / E — уклонение</p></section></div>
 </main>
 <script type="module" src="game.js"></script>
 </body>
